@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- BFC AMSTERDAM PUBLISHING CALENDAR (input side; publishes data.json). Deploy as index.html in BFC_AMS_26. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -122,6 +123,9 @@ dialog textarea{width:100%;height:340px;font:12px/1.4 ui-monospace,Menlo,Consola
 .drow{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 .drow button{border:1px solid var(--line);background:var(--sched);border-radius:6px;padding:8px 14px;font-weight:600}
 .drow .go{background:var(--btc);border-color:var(--btc);color:#1B1000}
+.pub .btn.primary[disabled]{opacity:.5;cursor:default}
+#syncLine b{color:var(--ink)}
+#syncLine.warn{color:var(--late)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
 
@@ -189,6 +193,13 @@ dialog h2{font-stretch:75%;font-weight:800;font-size:24px;margin:0 0 4px}
       <ul class="roster" id="roster"></ul>
     </section>
 
+    <section class="pub">
+      <h2>Publish to Session Replays</h2>
+      <p class="hint" id="syncLine">Checking the site…</p>
+      <button class="btn primary" id="btnPublish">Publish changes<small id="pubSmall">Updates the public Session Replays page</small></button>
+      <button class="link" id="btnGh">GitHub connection</button>
+    </section>
+
     <section>
       <h2>Export</h2>
       <label class="check"><input type="checkbox" id="optNum"> Put the clip number in event titles</label>
@@ -243,6 +254,15 @@ dialog h2{font-stretch:75%;font-weight:800;font-size:24px;margin:0 0 4px}
   <textarea id="icsText" readonly></textarea>
   <div class="drow"><button id="dlIcs" hidden>Download .ics</button><button id="closeIcs">Close</button><button class="go" id="copyIcs">Copy code</button></div>
 </dialog>
+<dialog id="ghDlg" aria-labelledby="ghTitle">
+  <h2 id="ghTitle">GitHub connection</h2>
+  <p class="sub">Publishing saves your entries to a <b>data.json</b> file in this site's repository. The public Session Replays page reads that file. The token stays in this browser only and is never published.</p>
+  <div class="field"><label for="ghRepo">Repository</label><div class="frow"><input id="ghRepo" placeholder="marshallmd/BFC_AMS_26"></div></div>
+  <div class="field"><label for="ghBranch">Branch</label><div class="frow"><input id="ghBranch" placeholder="main"></div></div>
+  <div class="field"><label for="ghToken">Access token</label><div class="frow"><input id="ghToken" type="password" autocomplete="off" placeholder="github_pat_…"></div>
+    <p class="note">Fine-grained token with access to this one repository and <b>Contents: Read and write</b>.</p></div>
+  <div class="drow"><button id="ghForget">Remove token</button><button id="ghClose">Cancel</button><button class="go" id="ghSave">Save</button></div>
+</dialog>
 <div class="toast" id="toast" role="status"></div>
 
 <script>// ---- data ----
@@ -273,7 +293,8 @@ function defaultState(){
     blackouts:["2026-11-26"],
     numberInTitle:false,
     includeReleased:true,
-    links:{vod:{}, clip:{}}
+    links:{vod:{}, clip:{}, vodx:{}, vodli:{}},
+    updatedAt:0
   };
 }
 
@@ -372,12 +393,14 @@ const LOCAL=!(window.claude&&window.claude.use);
 let downloads=null;
 if(!LOCAL){ window.claude.use("downloads").then(d=>{downloads=d;}).catch(()=>{}); }
 
+function mergeLinks(d,s){ s=s||{}; return {vod:{...d.vod,...(s.vod||{})}, clip:{...(s.clip||{})}, vodx:{...(s.vodx||{})}, vodli:{...(s.vodli||{})}}; }
+function normalize(s){ const d=defaultState(); const m={...d,...s}; m.links=mergeLinks(d.links,s.links); return m; }
 function load(){
   try{ const s=JSON.parse(localStorage.getItem(KEY));
-    if(s&&s.counts&&s.vodStart){ const d=defaultState(); const m={...d,...s}; m.links={vod:{...d.links.vod,...((s.links||{}).vod||{})}, clip:{...((s.links||{}).clip||{})}}; return m; } }catch(e){}
+    if(s&&s.counts&&s.vodStart){ const d=defaultState(); const m={...d,...s}; m.links=mergeLinks(d.links,s.links); return m; } }catch(e){}
   return defaultState();
 }
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} }
+function save(){ st.updatedAt=Date.now(); try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} if(typeof syncStatus==="function") syncStatus(); }
 function commit(){ save(); render(); }
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -388,6 +411,8 @@ const monthName=ym=>{const [y,m]=ym.split("-").map(Number);return new Date(y,m-1
 // ---- links ----
 function normUrl(u){ u=(u||"").trim(); if(!u) return ""; return /^https?:\/\//i.test(u)?u:"https://"+u; }
 const vodLink=vid=>st.links.vod[vid]||"";
+const vodPost=(vid,k)=>(st.links[k]||{})[vid]||"";
+function setVodPost(vid,k,u){ u=normUrl(u); st.links[k]=st.links[k]||{}; if(u) st.links[k][vid]=u; else delete st.links[k][vid]; save(); render(); }
 const clipLinks=id=>st.links.clip[id]||{};
 function setVodLink(vid,u){ u=normUrl(u); if(u) st.links.vod[vid]=u; else delete st.links.vod[vid]; save(); render(); }
 function setClipLink(id,key,u){ u=normUrl(u); const o={...clipLinks(id)}; if(u) o[key]=u; else delete o[key];
@@ -489,11 +514,17 @@ function renderVod(){
   B.innerHTML=`<h2 id="vodTitle">${v.num}. ${esc(v.title)}</h2><p class="sub">${esc(v.who)}. Full VOD ${vr?(vr.released?"released ":"scheduled for ")+fmt(vr.date):"not scheduled"}.</p>
     <div class="box"><h3>YouTube full VOD</h3><div class="frow"><input type="url" id="vVod" placeholder="https://youtu.be/…" value="${esc(vl)}"></div>
       <p style="margin:10px 0 0"><a class="watch" href="${esc(vl)||"#"}" target="_blank" rel="noopener" aria-disabled="${!vl}">Watch full VOD on YouTube</a></p></div>
+    <div class="box"><h3>Full VOD posts</h3>
+      <div class="field"><label for="vX">X post</label><div class="frow"><input type="url" id="vX" placeholder="https://x.com/BitcoinForCorps/status/…" value="${esc(vodPost(vid,"vodx"))}"><a href="${esc(vodPost(vid,"vodx"))||"#"}" target="_blank" rel="noopener" aria-disabled="${!vodPost(vid,"vodx")}">Open</a></div></div>
+      <div class="field" style="margin-bottom:0"><label for="vLi">LinkedIn post</label><div class="frow"><input type="url" id="vLi" placeholder="https://www.linkedin.com/feed/update/…" value="${esc(vodPost(vid,"vodli"))}"><a href="${esc(vodPost(vid,"vodli"))||"#"}" target="_blank" rel="noopener" aria-disabled="${!vodPost(vid,"vodli")}">Open</a></div></div>
+      <p class="note">These appear on the public Session Replays page after you publish.</p></div>
     <div class="box"><h3>Clip links</h3>${clips}</div>
     <div class="drow">${vr?`<button id="vRel">${vr.released?"Un-mark VOD released":"Mark VOD released"}</button>`:""}<button class="go" data-close>Done</button></div>`;
   B.querySelector("[data-close]").onclick=()=>$("vodDlg").close();
   if(vr) $("vRel").onclick=()=>{ toggleRelease(vid,vr.date); renderVod(); };
   $("vVod").onchange=e=>{ setVodLink(vid,e.target.value); renderVod(); };
+  $("vX").onchange=e=>{ setVodPost(vid,"vodx",e.target.value); renderVod(); };
+  $("vLi").onchange=e=>{ setVodPost(vid,"vodli",e.target.value); renderVod(); };
   B.querySelectorAll("input[data-id]").forEach(inp=>inp.onchange=e=>{ setClipLink(inp.dataset.id,inp.dataset.k,e.target.value); renderVod(); });
 }
 
@@ -626,6 +657,95 @@ $("copyIcs").onclick=async()=>{
   catch(e){ ta.focus(); ta.select(); try{ document.execCommand("copy"); toast("Calendar code copied"); }catch(_){ toast("Select the code and press Ctrl+C"); } }
 };
 render();
+
+// ---- publish / load via GitHub ----
+const GH_KEY="ams26-github-connection";
+const DATA_FILE="data.json";
+let gh=(()=>{ try{ return {repo:"marshallmd/BFC_AMS_26",branch:"main",token:"",...JSON.parse(localStorage.getItem(GH_KEY)||"{}")}; }catch(e){ return {repo:"marshallmd/BFC_AMS_26",branch:"main",token:""}; } })();
+const saveGh=()=>{ try{ localStorage.setItem(GH_KEY,JSON.stringify(gh)); }catch(e){} };
+let remoteAt=0, remoteChecked=false, publishing=false;
+const fmtStamp=t=>new Date(t).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+
+function buildPayload(){
+  const rows=schedule(st).rows.filter(r=>r.kind==="vod");
+  const dateOf=Object.fromEntries(rows.map(r=>[r.id,r]));
+  const seq=vodSequence(st);
+  return {
+    schema:1, event:"BFC Symposium Amsterdam 2026", updatedAt:st.updatedAt||Date.now(),
+    vods:seq.map((id,i)=>({ id, order:i+1, title:VOD_BY_ID[id].title,
+      date:(dateOf[id]||{}).date||"", released:!!st.released[id],
+      yt:vodLink(id), x:vodPost(id,"vodx"), li:vodPost(id,"vodli") })),
+    state:st
+  };
+}
+const b64=s=>btoa(unescape(encodeURIComponent(s)));
+async function ghApi(path,opts={}){
+  const [owner,repo]=gh.repo.split("/");
+  const r=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`+(opts.method?"":`?ref=${encodeURIComponent(gh.branch)}`),{
+    ...opts, cache:"no-store",
+    headers:{Accept:opts.raw?"application/vnd.github.raw+json":"application/vnd.github+json",Authorization:"Bearer "+gh.token,"X-GitHub-Api-Version":"2022-11-28",...(opts.headers||{})}});
+  return r;
+}
+function ghError(r){
+  if(r.status===401) return "GitHub didn't accept the token. Check it in GitHub connection.";
+  if(r.status===403) return "The token can't write to this repository. It needs Contents: Read and write.";
+  if(r.status===404) return "Repository or branch not found. Check GitHub connection.";
+  if(r.status===409) return "The file changed on GitHub at the same moment. Publish again.";
+  return "GitHub returned an error ("+r.status+"). Try again.";
+}
+async function publish(){
+  if(!gh.token){ openGh(); toast("Add your GitHub token first"); return; }
+  if(publishing) return; publishing=true; syncStatus();
+  try{
+    if(!st.updatedAt) st.updatedAt=Date.now();
+    const payload=buildPayload();
+    let sha;
+    const cur=await ghApi(DATA_FILE);
+    if(cur.ok) sha=(await cur.json()).sha; else if(cur.status!==404){ throw ghError(cur); }
+    const put=await ghApi(DATA_FILE,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      message:`Update Session Replays data (${new Date().toISOString().slice(0,16).replace("T"," ")})`,
+      content:b64(JSON.stringify(payload,null,1)), branch:gh.branch, ...(sha?{sha}:{}) })});
+    if(!put.ok) throw ghError(put);
+    remoteAt=payload.updatedAt; remoteChecked=true;
+    toast("Published. The replays page updates within a few minutes.");
+  }catch(e){ toast(typeof e==="string"?e:"Couldn't reach GitHub. Check your connection and try again."); }
+  publishing=false; syncStatus();
+}
+async function loadRemote(){
+  let data=null;
+  try{
+    if(gh.token){ const r=await ghApi(DATA_FILE,{raw:true}); if(r.ok) data=await r.json(); }
+    if(!data && /github\.io$/.test(location.hostname)){ const r=await fetch(DATA_FILE+"?t="+Date.now(),{cache:"no-store"}); if(r.ok) data=await r.json(); }
+  }catch(e){}
+  remoteChecked=true;
+  if(data&&data.state&&data.updatedAt){
+    remoteAt=data.updatedAt;
+    if(!st.updatedAt || data.updatedAt>st.updatedAt){
+      st=normalize(data.state); st.updatedAt=data.updatedAt;
+      try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){}
+      render(); toast("Loaded the latest published entries");
+    }
+  }
+  syncStatus();
+}
+function syncStatus(){
+  const L=$("syncLine"), B=$("btnPublish"); if(!L) return;
+  L.classList.remove("warn");
+  B.disabled=publishing;
+  $("pubSmall").textContent=publishing?"Publishing…":"Updates the public Session Replays page";
+  if(!remoteChecked){ L.textContent="Checking the site…"; return; }
+  if(!gh.token){ L.innerHTML="<b>Not connected.</b> Add a GitHub token to publish."; L.classList.add("warn"); return; }
+  if(!remoteAt){ L.innerHTML="<b>Nothing published yet.</b>"; L.classList.add("warn"); return; }
+  if(st.updatedAt>remoteAt){ L.innerHTML=`<b>Unpublished changes.</b> Last published ${fmtStamp(remoteAt)}.`; L.classList.add("warn"); return; }
+  L.innerHTML=`<b>Up to date.</b> Published ${fmtStamp(remoteAt)}.`;
+}
+function openGh(){ $("ghRepo").value=gh.repo; $("ghBranch").value=gh.branch; $("ghToken").value=gh.token; $("ghDlg").showModal(); }
+$("btnGh").onclick=openGh;
+$("ghClose").onclick=()=>$("ghDlg").close();
+$("ghSave").onclick=()=>{ gh={repo:$("ghRepo").value.trim()||"marshallmd/BFC_AMS_26",branch:$("ghBranch").value.trim()||"main",token:$("ghToken").value.trim()}; saveGh(); $("ghDlg").close(); toast(gh.token?"GitHub connected":"Saved"); remoteChecked=false; syncStatus(); loadRemote(); };
+$("ghForget").onclick=()=>{ gh.token=""; saveGh(); $("ghToken").value=""; $("ghDlg").close(); toast("Token removed from this browser"); syncStatus(); };
+$("btnPublish").onclick=publish;
+syncStatus(); loadRemote();
 
 </script>
 </body>
