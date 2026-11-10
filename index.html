@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BFC Amsterdam 26 — Publishing calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9ECEF; --panel:#F8F9FA; --ink:#14181F; --muted:#5B6573; --line:#CDD3DA;
+  --btc:#F7931A; --btc-ink:#7A4300; --btc-soft:#FDE7C8; --sched:#FFFFFF; --late:#B3261E; --vod:#14181F; --vod-ink:#F8F9FA;
+  --font:"Archivo", "Helvetica Neue", Arial, system-ui, sans-serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161C; --panel:#1A2029; --ink:#E8ECF1; --muted:#97A2B0; --line:#2C3542;
+    --btc:#F7931A; --btc-ink:#FFC27A; --btc-soft:#3A2A14; --sched:#202833; --late:#FF8A80; --vod:#E8ECF1; --vod-ink:#12161C; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161C; --panel:#1A2029; --ink:#E8ECF1; --muted:#97A2B0; --line:#2C3542;
+  --btc:#F7931A; --btc-ink:#FFC27A; --btc-soft:#3A2A14; --sched:#202833; --late:#FF8A80; --vod:#E8ECF1; --vod-ink:#12161C; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.45 var(--font);}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--btc);outline-offset:2px}
+
+.shell{display:grid;grid-template-columns:340px 1fr;min-height:100vh}
+aside{background:var(--panel);border-right:1px solid var(--line);padding:28px 24px;display:flex;flex-direction:column;gap:28px}
+main{padding:28px 32px;min-width:0}
+
+h1{font-stretch:75%;font-weight:800;font-size:34px;line-height:1;margin:0;letter-spacing:-.01em}
+h1 small{display:block;font-stretch:100%;font-weight:500;font-size:14px;color:var(--muted);margin-top:8px;letter-spacing:0}
+h2{font-stretch:87%;font-weight:700;font-size:17px;margin:0 0 10px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 10px}
+
+.days{display:flex;gap:4px}
+.days button{flex:1;padding:8px 0;border:1px solid var(--line);background:transparent;border-radius:6px;font-weight:600;font-size:13px}
+.days button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+
+.roster{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.roster li{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.roster li:first-child{border-top:0}
+.num{font-stretch:75%;font-weight:700;color:var(--muted);font-size:13px;text-align:right}
+.rt{font-size:13px;line-height:1.25;min-width:0}
+.rt span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pips{display:flex;gap:3px;margin-top:4px}
+.pip{width:14px;height:6px;border-radius:2px;border:1px solid var(--btc)}
+.pip.on{background:var(--btc)}
+.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.step button{border:0;background:transparent;width:24px;height:26px;font-weight:700}
+.step button:disabled{opacity:.3;cursor:default}
+.step output{width:16px;text-align:center;font-weight:600;font-size:13px}
+
+.check{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin-bottom:6px}
+.check input{margin-top:3px;accent-color:var(--btc)}
+.btn{display:block;width:100%;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--sched);font-weight:600;font-size:14px;margin-bottom:6px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--btc);border-color:var(--btc);color:#1B1000}
+.btn small{display:block;font-weight:400;color:inherit;opacity:.75;font-size:12px}
+.link{border:0;background:none;padding:0;color:var(--muted);text-decoration:underline;font-size:13px}
+
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.status{font-size:15px;max-width:62ch}
+.status b{font-weight:700}
+.tabs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tabs button{border:0;background:transparent;padding:8px 16px;font-weight:600;font-size:14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel)}
+
+.monthbar{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.monthbar h3{margin:0;font-stretch:75%;font-weight:800;font-size:26px;min-width:8ch}
+.monthbar button{border:1px solid var(--line);background:var(--panel);border-radius:6px;width:34px;height:34px;font-size:16px}
+.gridwrap{overflow-x:auto}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(110px,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line);min-width:770px}
+.dow{font-size:12px;font-weight:600;color:var(--muted);padding:6px 8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel)}
+.cell{min-height:104px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px;background:var(--panel);position:relative}
+.cell.out{background:transparent}
+.cell.out .dn{opacity:.4}
+.cell.off{background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--line) 45%,transparent) 6px 7px)}
+.dn{border:0;background:none;padding:0 4px;border-radius:4px;font-size:13px;font-weight:600;color:var(--muted)}
+.dn:hover{background:var(--line);color:var(--ink)}
+.cell.today .dn{background:var(--ink);color:var(--panel)}
+.cell.black .dn{text-decoration:line-through}
+.chip{display:block;width:100%;text-align:left;margin-top:6px;padding:6px 7px 6px 9px;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:5px;background:var(--sched);font-size:12px;line-height:1.25}
+.chip b{display:block;font-stretch:87%;font-weight:700;font-size:12px}
+.chip.rel{border-left-color:var(--btc);background:var(--btc-soft)}
+.chip.rel b{color:var(--btc-ink)}
+.chip.late{border-left-color:var(--late)}
+.chip.vod{background:var(--vod);color:var(--vod-ink);border-color:var(--vod)}
+.chip.vod.rel{border-left-color:var(--btc)}
+.chip.vod.late{border-left-color:var(--late)}
+tr.vod td{font-weight:600}
+.kind{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:1px 5px;border-radius:3px;background:var(--vod);color:var(--vod-ink);margin-right:6px;vertical-align:1px}
+.chip .t{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:14px}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.date{white-space:nowrap;font-weight:600;font-stretch:87%}
+td.c{white-space:nowrap}
+tr.rel td{background:var(--btc-soft)}
+tr.late td.date{color:var(--late)}
+.acts{display:flex;gap:4px;justify-content:flex-end}
+.acts button{border:1px solid var(--line);background:var(--sched);border-radius:5px;padding:4px 8px;font-size:12px;font-weight:600}
+.acts button:disabled{opacity:.3;cursor:default}
+.acts .done{background:var(--btc);border-color:var(--btc);color:#1B1000}
+.tablewrap{overflow-x:auto}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px;border:1px solid var(--line)}
+
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);padding:20px;width:min(720px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog textarea{width:100%;height:340px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:6px;background:var(--sched);color:var(--ink);padding:10px}
+.drow{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.drow button{border:1px solid var(--line);background:var(--sched);border-radius:6px;padding:8px 14px;font-weight:600}
+.drow .go{background:var(--btc);border-color:var(--btc);color:#1B1000}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+
+.rt button.vname{border:0;background:none;padding:0;text-align:left;font-size:13px;line-height:1.25;display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rt button.vname:hover{text-decoration:underline}
+.rctl{display:flex;gap:4px;align-items:center}
+.play{display:inline-flex;align-items:center;justify-content:center;width:26px;height:28px;border:1px solid var(--line);border-radius:6px;font-size:11px;text-decoration:none;color:var(--ink);background:var(--sched)}
+.play:hover{border-color:var(--btc);color:var(--btc-ink)}
+.play.none{visibility:hidden}
+.tags{display:flex;gap:3px;margin-top:4px}
+.tag{font-size:10px;font-weight:700;padding:0 4px;border-radius:3px;border:1px solid currentColor;opacity:.7}
+.exp{display:flex;flex-direction:column;gap:8px}
+.exprow{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;font-size:14px}
+.exprow > span{font-weight:600}
+.exprow input[type=date]{border:1px solid var(--line);border-radius:6px;background:var(--sched);padding:5px 6px;font-size:13px;min-width:0}
+.exprow button{border:1px solid var(--line);background:var(--sched);border-radius:6px;padding:6px 10px;font-weight:600;font-size:13px}
+.exprow button:hover{border-color:var(--ink)}
+.exprow button.ics{background:var(--btc);border-color:var(--btc);color:#1B1000}
+dialog h2{font-stretch:75%;font-weight:800;font-size:24px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 16px}
+.field{margin-bottom:14px}
+.field > label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
+.frow{display:flex;gap:6px}
+.frow select,.frow input{flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;background:var(--sched);padding:8px 9px;font-size:14px}
+.frow select.n{flex:0 0 110px}
+.frow a,.frow button{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:6px;background:var(--sched);padding:0 12px;font-weight:600;font-size:13px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.frow a[aria-disabled="true"]{opacity:.35;pointer-events:none}
+.frow .go{background:var(--btc);border-color:var(--btc);color:#1B1000}
+.frow button:disabled{opacity:.35;cursor:default}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+.box{border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px}
+.box h3{font-size:14px;margin:0 0 10px;font-stretch:87%}
+.watch{display:inline-block;background:var(--ink);color:var(--panel)!important;border-radius:6px;padding:8px 14px;font-weight:700;text-decoration:none;font-size:14px}
+.watch[aria-disabled="true"]{opacity:.35;pointer-events:none}
+.cliprow{border-top:1px solid var(--line);padding:10px 0}
+.cliprow:first-of-type{border-top:0}
+.cliprow .h{font-size:13px;font-weight:700;margin-bottom:6px}
+.cliprow .h span{font-weight:400;color:var(--muted)}
+.cliprow .frow{margin-bottom:6px}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  aside{border-right:0;border-bottom:1px solid var(--line)}
+  main{padding:20px 16px}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <h1>AMS26 publishing calendar<small>BFC Symposium Amsterdam, 11 VODs then 33 clips for YouTube and X</small></h1>
+
+    <section>
+      <h2>Release days</h2>
+      <p class="hint">Full VODs go out on these days, from <b id="vodStartLabel"></b>. Clips start the day after the last VOD. Click a date number on the calendar to skip that day.</p>
+      <p class="hint" style="margin-bottom:4px"><b>VODs</b></p>
+      <div class="days" id="vdays"></div>
+      <p class="hint" style="margin:10px 0 4px"><b>Clips</b></p>
+      <div class="days" id="days"></div>
+    </section>
+
+    <section>
+      <h2>Clips per VOD</h2>
+      <p class="hint">Filled bars are released. Click a title to add its YouTube and X links. ▶ opens the full VOD. Reorder VODs in the List view.</p>
+      <ul class="roster" id="roster"></ul>
+    </section>
+
+    <section>
+      <h2>Export</h2>
+      <label class="check"><input type="checkbox" id="optNum"> Put the clip number in event titles</label>
+      <label class="check"><input type="checkbox" id="optRel"> Include items already released</label>
+      <div class="exp" style="margin-top:10px">
+        <div class="exprow"><span>Full schedule</span><button class="ics" data-scope="all">.ics</button><button data-scope="all" data-csv>CSV</button></div>
+        <div class="exprow"><span id="expMonth">Month</span><button class="ics" data-scope="month">.ics</button><button data-scope="month" data-csv>CSV</button></div>
+        <div class="exprow"><input type="date" id="expDay" aria-label="Single day to export"><button class="ics" data-scope="day">.ics</button><button data-scope="day" data-csv>CSV</button></div>
+      </div>
+      <p class="hint" style="margin-top:10px" id="expHint"></p>
+      <button class="link" id="btnReset">Reset to the original plan</button>
+    </section>
+  </aside>
+
+  <main>
+    <div class="top">
+      <p class="status" id="status"></p>
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tabCal" aria-selected="true">Calendar</button>
+        <button role="tab" id="tabList" aria-selected="false">List</button>
+      </div>
+    </div>
+    <section id="viewCal">
+      <div class="monthbar">
+        <button id="prev" aria-label="Previous month">‹</button>
+        <h3 id="mlabel"></h3>
+        <button id="next" aria-label="Next month">›</button>
+      </div>
+      <div class="gridwrap"><div class="grid" id="grid"></div></div>
+      <div class="legend">
+        <span><i style="background:var(--btc-soft);border-left:3px solid var(--btc)"></i>Released</span>
+        <span><i style="background:var(--sched)"></i>Scheduled clip</span>
+        <span><i style="background:var(--vod)"></i>Full VOD</span>
+        <span><i style="background:var(--sched);border-left:3px solid var(--late)"></i>Past due, not marked released</span>
+        <span>Click a clip to change its VOD, add links, or mark it released</span>
+      </div>
+    </section>
+    <section id="viewList" hidden>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Date</th><th>VOD</th><th>Item</th><th style="text-align:right">Actions</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="clipDlg" aria-labelledby="clipTitle"><div id="clipBody"></div></dialog>
+<dialog id="vodDlg" aria-labelledby="vodTitle"><div id="vodBody"></div></dialog>
+<dialog id="icsDlg">
+  <h2>Calendar code</h2>
+  <p class="hint">Copy this into a text file saved as <b id="icsName"></b>, then in Google Calendar go to Settings, Import &amp; export, and import it. Each clip keeps a stable ID, so re-importing won't double up events.</p>
+  <textarea id="icsText" readonly></textarea>
+  <div class="drow"><button id="dlIcs" hidden>Download .ics</button><button id="closeIcs">Close</button><button class="go" id="copyIcs">Copy code</button></div>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>// ---- data ----
+const VODS = [
+  {id:"v1", title:"The Institutional Bitcoin Yield Stack", who:"Ben Werkman, Matthew Whitcomb, Himanshu Sahay; host Brian Hirschfield"},
+  {id:"v2", title:"From Bitcoin Exposure to Institutional Adoption", who:"Lance Vitanza, Jeff Walton, Khing Oei; host Gareth Jenkinson"},
+  {id:"v3", title:"Bitcoin's Awkward Age", who:"Tony Dicarlo (Rootstock Labs), keynote"},
+  {id:"v4", title:"Welcome to Amsterdam & Opening Remarks", who:"Khing Oei, Jake Fenton"},
+  {id:"v5", title:"Securing Corporate Bitcoin: Privacy, Custody & Risk", who:"Misha Komarov, Chris Seedor, Rob Hamilton; host Allard Peng"},
+  {id:"v6", title:"Funding Growth and Attracting Institutional Capital", who:"Yves Choueifaty, Willem Middelkoop, Florence Humblet; host Henry Jim"},
+  {id:"v7", title:"Bitcoin & the Autonomous Economy", who:"Martina Golob, Jeremy Kadouch, David Buttrey; host Jake Fenton"},
+  {id:"v8", title:"Banking, Tokenization, & Stablecoins", who:"Milko Hensel, Trey Sellers, Jos Lazet; host Allen Helm"},
+  {id:"v9", title:"Post-MiCA Acceleration: Opportunity After Regulatory Clarity", who:"Tom van Lamoen, Simon Lelieveldt, Leon Wankum, Michaël van de Poppe; host Susie Violet Ward"},
+  {id:"v10", title:"Building Generational Wealth on Bitcoin: A Family Office's Journey", who:"Richard Byworth, Rony Vogel"},
+  {id:"v11", title:"Showcase: XCE", who:"Scott Ellam (XCE), solo presentation"}
+];
+const VOD_BY_ID = Object.fromEntries(VODS.map((v,i)=>[v.id,{...v,num:i+1}]));
+
+function defaultState(){
+  return {
+    vodStart:"2026-11-10",
+    vodWeekdays:[2,3,4],
+    weekdays:[0,1,2,3,4,5,6],
+    counts:Object.fromEntries(VODS.map(v=>[v.id,3])),
+    released:{},
+    vodOrder:null,
+    order:null,
+    blackouts:["2026-11-26"],
+    numberInTitle:false,
+    includeReleased:true,
+    links:{vod:{}, clip:{}}
+  };
+}
+
+// ---- dates ----
+const iso = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const parse = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
+const addDays = (s,n) => { const d=parse(s); d.setDate(d.getDate()+n); return iso(d); };
+
+// ---- ids ----
+const clipId = (vid,n) => vid+"c"+n;
+const isClip = id => /c\d+$/.test(id);
+const splitId = id => { const m=id.match(/^(v\d+)(?:c(\d+))?$/); return {vid:m[1], n:m[2]?+m[2]:0}; };
+
+// ---- queues ----
+function vodQueue(st){
+  const valid=new Set(VODS.map(v=>v.id).filter(id=>!st.released[id]));
+  const base=(st.vodOrder||[]).filter(id=>valid.has(id)); const seen=new Set(base);
+  for(const v of VODS) if(valid.has(v.id)&&!seen.has(v.id)) base.push(v.id);
+  return base;
+}
+function vodSequence(st){
+  return [...Object.keys(st.released).filter(id=>!isClip(id)).sort((a,b)=>st.released[a]<st.released[b]?-1:1), ...vodQueue(st)];
+}
+function allClipIds(st){ const out=[]; for(const v of VODS) for(let n=1;n<=st.counts[v.id];n++) out.push(clipId(v.id,n)); return out; }
+function defaultOrder(st){
+  const seq=vodSequence(st), max=Math.max(...VODS.map(v=>st.counts[v.id])), out=[];
+  for(let n=1;n<=max;n++) for(const vid of seq) if(n<=st.counts[vid]) out.push(clipId(vid,n));
+  return out;
+}
+function queue(st){
+  const valid=new Set(allClipIds(st).filter(id=>!st.released[id]));
+  const base=(st.order||[]).filter(id=>valid.has(id)); const seen=new Set(base);
+  for(const id of defaultOrder(st)) if(valid.has(id)&&!seen.has(id)){ base.push(id); seen.add(id); }
+  return base;
+}
+function place(ids, startDay, weekdays, black){
+  const out=[]; let day=startDay, guard=0;
+  if(!weekdays.length) return {out, unscheduled:ids};
+  for(const id of ids){
+    while((!weekdays.includes(parse(day).getDay())||black.has(day))&&guard<5000){ day=addDays(day,1); guard++; }
+    out.push({id,date:day}); day=addDays(day,1);
+  }
+  return {out, unscheduled:[]};
+}
+const cmp=(a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.kind==="vod"?-1:1);
+function schedule(st){
+  const black=new Set(st.blackouts);
+  const rel=Object.entries(st.released)
+    .filter(([id])=>{const s=splitId(id); return VOD_BY_ID[s.vid] && s.n<=st.counts[s.vid];})
+    .map(([id,date])=>({id,date,released:true,kind:isClip(id)?"clip":"vod"}));
+  const relVod=rel.filter(r=>r.kind==="vod"), relClip=rel.filter(r=>r.kind==="clip");
+  const lastVod=relVod.reduce((m,r)=>r.date>m?r.date:m,addDays(st.vodStart,-1));
+  const v=place(vodQueue(st), addDays(lastVod,1), st.vodWeekdays, black);
+  const vodsEnd = v.out.length ? v.out[v.out.length-1].date : lastVod;
+  const lastClip=relClip.reduce((m,r)=>r.date>m?r.date:m,"0000-00-00");
+  const clipStart = addDays(lastClip>vodsEnd?lastClip:vodsEnd,1);
+  const c=place(queue(st), clipStart, st.weekdays, black);
+  const rows=[...rel, ...v.out.map(r=>({...r,released:false,kind:"vod"})), ...c.out.map(r=>({...r,released:false,kind:"clip"}))].sort(cmp);
+  return {rows, unscheduled:[...v.unscheduled,...c.unscheduled]};
+}
+function eventTitle(st,id){
+  const {vid,n}=splitId(id), t=VOD_BY_ID[vid].title;
+  if(!isClip(id)) return `${t} VOD release`;
+  return st.numberInTitle ? `${t} Clip ${n} release` : `${t} Clip release`;
+}
+
+// ---- exports ----
+function icsEscape(s){ return s.replace(/\\/g,"\\\\").replace(/;/g,"\;").replace(/,/g,"\\,"); }
+function fold(line){
+  const enc=new TextEncoder(); if(enc.encode(line).length<=75) return line;
+  const parts=[]; let cur="", curLen=0, limit=75;
+  for(const ch of line){ const l=enc.encode(ch).length; if(curLen+l>limit){ parts.push(cur); cur=""; curLen=0; limit=74; } cur+=ch; curLen+=l; }
+  parts.push(cur); return parts.join("\r\n ");
+}
+function buildICS(st, stamp, rows){
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//BFC//AMS26 Publishing Calendar//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:BFC Amsterdam 26 Publishing"];
+  for(const r of rows){
+    L.push("BEGIN:VEVENT",`UID:${r.id}@bfc-ams26-publishing`,`DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${r.date.replace(/-/g,"")}`,`DTEND;VALUE=DATE:${addDays(r.date,1).replace(/-/g,"")}`,
+      fold("SUMMARY:"+icsEscape(eventTitle(st,r.id))),"TRANSP:TRANSPARENT","END:VEVENT");
+  }
+  L.push("END:VCALENDAR"); return L.join("\r\n")+"\r\n";
+}
+function buildCSV(st, rows){
+  const q=s=>'"'+s.replace(/"/g,'""')+'"'; const lines=["Subject,Start Date,All Day Event"];
+  for(const r of rows){ const [y,m,d]=r.date.split("-"); lines.push([q(eventTitle(st,r.id)),`${m}/${d}/${y}`,"True"].join(",")); }
+  return lines.join("\r\n")+"\r\n";
+}
+if(typeof module!=="undefined")module.exports={VODS,defaultState,schedule,buildICS,buildCSV,eventTitle,splitId,VOD_BY_ID,isClip};
+</script>
+<script>
+const KEY="ams26-publishing-calendar-v1";
+const TODAY=iso(new Date());
+let st=load(); let view="cal"; let month=TODAY.slice(0,7); let dayPick=null;
+const LOCAL=!(window.claude&&window.claude.use);
+let downloads=null;
+if(!LOCAL){ window.claude.use("downloads").then(d=>{downloads=d;}).catch(()=>{}); }
+
+function load(){
+  try{ const s=JSON.parse(localStorage.getItem(KEY));
+    if(s&&s.counts&&s.vodStart){ const d=defaultState(); const m={...d,...s}; m.links={vod:{...d.links.vod,...((s.links||{}).vod||{})}, clip:{...((s.links||{}).clip||{})}}; return m; } }catch(e){}
+  return defaultState();
+}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} }
+function commit(){ save(); render(); }
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2400); }
+const fmt=(s,o)=>parse(s).toLocaleDateString("en-US",o||{weekday:"short",month:"short",day:"numeric"});
+const monthName=ym=>{const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,1).toLocaleDateString("en-US",{month:"long",year:"numeric"});};
+
+// ---- links ----
+function normUrl(u){ u=(u||"").trim(); if(!u) return ""; return /^https?:\/\//i.test(u)?u:"https://"+u; }
+const vodLink=vid=>st.links.vod[vid]||"";
+const clipLinks=id=>st.links.clip[id]||{};
+function setVodLink(vid,u){ u=normUrl(u); if(u) st.links.vod[vid]=u; else delete st.links.vod[vid]; save(); render(); }
+function setClipLink(id,key,u){ u=normUrl(u); const o={...clipLinks(id)}; if(u) o[key]=u; else delete o[key];
+  if(Object.keys(o).length) st.links.clip[id]=o; else delete st.links.clip[id]; save(); render(); }
+
+// ---- schedule edits ----
+function materializeOrder(){ st.order=queue(st); }
+function materializeVodOrder(){ st.vodOrder=vodQueue(st); }
+function toggleRelease(id,date){
+  const vod=!isClip(id);
+  if(st.released[id]){ delete st.released[id];
+    if(vod){ materializeVodOrder(); st.vodOrder=[id,...st.vodOrder.filter(x=>x!==id)]; }
+    else { materializeOrder(); st.order=[id,...st.order.filter(x=>x!==id)]; }
+    toast("Moved back to the queue"); }
+  else { st.released[id]=date;
+    if(vod&&st.vodOrder) st.vodOrder=st.vodOrder.filter(x=>x!==id);
+    if(!vod&&st.order) st.order=st.order.filter(x=>x!==id);
+    toast("Marked released "+fmt(date)); }
+  commit();
+}
+function move(id,dir){
+  if(!isClip(id)){ materializeVodOrder(); const o=st.vodOrder, i=o.indexOf(id), j=i+dir; if(i<0||j<0||j>=o.length) return; [o[i],o[j]]=[o[j],o[i]]; commit(); return; }
+  materializeOrder(); const i=st.order.indexOf(id), j=i+dir;
+  if(i<0||j<0||j>=st.order.length) return;
+  [st.order[i],st.order[j]]=[st.order[j],st.order[i]]; commit();
+}
+// put clip `newId` on the day currently held by `slotId`; newId leaves its old day and the gap closes
+function assign(slotId,newId){
+  if(slotId===newId) return;
+  materializeOrder(); const o=st.order; const i=o.indexOf(slotId), j=o.indexOf(newId);
+  if(i<0||j<0) return;
+  o.splice(j,1); o.splice(i,0,newId); commit();
+}
+function toggleBlack(date){
+  const i=st.blackouts.indexOf(date);
+  if(i>=0){ st.blackouts.splice(i,1); toast(fmt(date)+" back in rotation"); } else { st.blackouts.push(date); toast("Skipping "+fmt(date)); }
+  commit();
+}
+
+// ---- clip modal ----
+let clipCtx=null; // {date}
+function rowOnDate(date){ return schedule(st).rows.find(r=>r.date===date&&r.kind==="clip"); }
+function openClip(date){ clipCtx={date}; renderClip(); if(!$("clipDlg").open) $("clipDlg").showModal(); }
+function openItem(r){ if(r.kind==="vod") openVod(splitId(r.id).vid); else openClip(r.date); }
+function renderClip(){
+  const r=rowOnDate(clipCtx.date); const B=$("clipBody");
+  if(!r){ B.innerHTML=`<h2 id="clipTitle">${fmt(clipCtx.date,{weekday:"long",month:"long",day:"numeric"})}</h2><p class="sub">No clip on this day anymore.</p><div class="drow"><button data-close>Close</button></div>`; B.querySelector("[data-close]").onclick=()=>$("clipDlg").close(); return; }
+  const {vid,n}=splitId(r.id), v=VOD_BY_ID[vid], L=clipLinks(r.id), vl=vodLink(vid);
+  const rows=schedule(st).rows, dateOf=Object.fromEntries(rows.map(x=>[x.id,x.date]));
+  // unreleased clips per VOD (published ones are dropped from the picker)
+  const avail={}; for(const id of queue(st)){ const s=splitId(id); (avail[s.vid]=avail[s.vid]||[]).push(s.n); }
+  for(const k in avail) avail[k].sort((a,b)=>a-b);
+  let src="";
+  if(!r.released){
+    const vodOpts=VODS.filter(x=>avail[x.id]).map(x=>`<option value="${x.id}" ${x.id===vid?"selected":""}>${VOD_BY_ID[x.id].num}. ${esc(x.title)}</option>`).join("");
+    src=`<div class="box"><h3>Clip source</h3>
+      <div class="frow"><select id="selVod" aria-label="VOD">${vodOpts}</select><select id="selN" class="n" aria-label="Clip number"></select><button class="go" id="applySrc">Use this clip</button></div>
+      <p class="note" id="srcNote"></p></div>`;
+  }
+  B.innerHTML=`<h2 id="clipTitle">${fmt(r.date,{weekday:"long",month:"long",day:"numeric"})}</h2>
+    <p class="sub">VOD ${v.num}, clip ${n}: ${esc(v.title)}${r.released?". Released.":""}</p>
+    ${src}
+    <div class="box"><h3>Links</h3>
+      <div class="field"><label for="lVod">YouTube full VOD</label><div class="frow"><input type="url" id="lVod" placeholder="https://youtu.be/…" value="${esc(vl)}"><a class="go" href="${esc(vl)||"#"}" target="_blank" rel="noopener" aria-disabled="${!vl}">Watch full VOD</a></div></div>
+      <div class="field"><label for="lYt">YouTube clip</label><div class="frow"><input type="url" id="lYt" placeholder="https://youtube.com/shorts/…" value="${esc(L.yt)}"><a href="${esc(L.yt)||"#"}" target="_blank" rel="noopener" aria-disabled="${!L.yt}">Open</a></div></div>
+      <div class="field" style="margin-bottom:0"><label for="lX">X post</label><div class="frow"><input type="url" id="lX" placeholder="https://x.com/BitcoinForCorps/status/…" value="${esc(L.x)}"><a href="${esc(L.x)||"#"}" target="_blank" rel="noopener" aria-disabled="${!L.x}">Open</a></div></div>
+    </div>
+    <div class="drow"><button id="relBtn">${r.released?"Un-mark released":"Mark released"}</button><button class="go" data-close>Done</button></div>`;
+  B.querySelector("[data-close]").onclick=()=>$("clipDlg").close();
+  $("relBtn").onclick=()=>{ toggleRelease(r.id,r.date); renderClip(); };
+  $("lVod").onchange=e=>{ setVodLink(vid,e.target.value); renderClip(); };
+  $("lYt").onchange=e=>{ setClipLink(r.id,"yt",e.target.value); renderClip(); };
+  $("lX").onchange=e=>{ setClipLink(r.id,"x",e.target.value); renderClip(); };
+  if(!r.released){
+    const sv=$("selVod"), sn=$("selN");
+    const fillN=()=>{ const list=avail[sv.value]||[]; const keep=sv.value===vid?n:list[0];
+      sn.innerHTML=list.map(k=>`<option value="${k}" ${k===keep?"selected":""}>Clip ${k}</option>`).join(""); note(); };
+    const note=()=>{ const id=clipId(sv.value,+sn.value);
+      $("applySrc").disabled=id===r.id;
+      $("srcNote").textContent = id===r.id ? "This is the clip already set for this day."
+        : `VOD ${VOD_BY_ID[sv.value].num}, clip ${sn.value} is currently set for ${fmt(dateOf[id])}. Using it here clears it from that day, and the clips in between shift one release day to close the gap.`; };
+    sv.onchange=fillN; sn.onchange=note; fillN();
+    $("applySrc").onclick=()=>{ const id=clipId(sv.value,+sn.value); const from=dateOf[id]; assign(r.id,id); toast(`Moved from ${fmt(from)} to ${fmt(r.date)}`); renderClip(); };
+  }
+}
+
+// ---- VOD modal ----
+let vodCtx=null;
+function openVod(vid){ vodCtx=vid; renderVod(); if(!$("vodDlg").open) $("vodDlg").showModal(); }
+function renderVod(){
+  const vid=vodCtx, v=VOD_BY_ID[vid], vl=vodLink(vid), B=$("vodBody");
+  const dateOf=Object.fromEntries(schedule(st).rows.map(x=>[x.id,x]));
+  let clips="";
+  for(let k=1;k<=st.counts[vid];k++){ const id=clipId(vid,k), L=clipLinks(id), r=dateOf[id];
+    clips+=`<div class="cliprow"><div class="h">Clip ${k} <span>${r?(r.released?"released ":"scheduled ")+fmt(r.date):"not scheduled"}</span></div>
+      <div class="frow"><input type="url" data-id="${id}" data-k="yt" placeholder="YouTube clip link" aria-label="Clip ${k} YouTube link" value="${esc(L.yt)}"><a href="${esc(L.yt)||"#"}" target="_blank" rel="noopener" aria-disabled="${!L.yt}">Open</a></div>
+      <div class="frow"><input type="url" data-id="${id}" data-k="x" placeholder="X post link" aria-label="Clip ${k} X link" value="${esc(L.x)}"><a href="${esc(L.x)||"#"}" target="_blank" rel="noopener" aria-disabled="${!L.x}">Open</a></div></div>`; }
+  const vr=dateOf[vid];
+  B.innerHTML=`<h2 id="vodTitle">${v.num}. ${esc(v.title)}</h2><p class="sub">${esc(v.who)}. Full VOD ${vr?(vr.released?"released ":"scheduled for ")+fmt(vr.date):"not scheduled"}.</p>
+    <div class="box"><h3>YouTube full VOD</h3><div class="frow"><input type="url" id="vVod" placeholder="https://youtu.be/…" value="${esc(vl)}"></div>
+      <p style="margin:10px 0 0"><a class="watch" href="${esc(vl)||"#"}" target="_blank" rel="noopener" aria-disabled="${!vl}">Watch full VOD on YouTube</a></p></div>
+    <div class="box"><h3>Clip links</h3>${clips}</div>
+    <div class="drow">${vr?`<button id="vRel">${vr.released?"Un-mark VOD released":"Mark VOD released"}</button>`:""}<button class="go" data-close>Done</button></div>`;
+  B.querySelector("[data-close]").onclick=()=>$("vodDlg").close();
+  if(vr) $("vRel").onclick=()=>{ toggleRelease(vid,vr.date); renderVod(); };
+  $("vVod").onchange=e=>{ setVodLink(vid,e.target.value); renderVod(); };
+  B.querySelectorAll("input[data-id]").forEach(inp=>inp.onchange=e=>{ setClipLink(inp.dataset.id,inp.dataset.k,e.target.value); renderVod(); });
+}
+
+// ---- render ----
+function tagsFor(id){ const L=clipLinks(id); return (L.yt||L.x)?`<span class="tags">${L.yt?'<span class="tag">YT</span>':""}${L.x?'<span class="tag">X</span>':""}</span>`:""; }
+function render(){
+  const {rows,unscheduled}=schedule(st);
+  const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], order=[1,2,3,4,5,6,0];
+  for(const [el,key] of [["vdays","vodWeekdays"],["days","weekdays"]]){
+    $(el).innerHTML="";
+    for(const d of order){ const b=document.createElement("button"); b.textContent=names[d]; b.setAttribute("aria-pressed",st[key].includes(d));
+      b.onclick=()=>{ st[key]=st[key].includes(d)?st[key].filter(x=>x!==d):[...st[key],d]; commit(); }; $(el).appendChild(b); }
+  }
+  $("vodStartLabel").textContent=fmt(st.vodStart);
+  // roster
+  const R=$("roster"); R.innerHTML="";
+  VODS.forEach((v,i)=>{
+    const c=st.counts[v.id]; let maxRel=0;
+    for(const id in st.released){ const s=splitId(id); if(s.vid===v.id) maxRel=Math.max(maxRel,s.n); }
+    const vl=vodLink(v.id);
+    const li=document.createElement("li");
+    li.innerHTML=`<span class="num">${i+1}</span><div class="rt"><button class="vname" title="${esc(v.title)}. ${esc(v.who)}">${esc(v.title)}</button><div class="pips">${Array.from({length:c},(_,k)=>`<i class="pip${st.released[v.id+"c"+(k+1)]?" on":""}" title="Clip ${k+1}"></i>`).join("")}</div></div>
+      <div class="rctl"><a class="play${vl?"":" none"}" href="${esc(vl)||"#"}" target="_blank" rel="noopener" aria-label="Watch full VOD on YouTube" title="Watch full VOD on YouTube" ${vl?"":'tabindex="-1" aria-hidden="true"'}>▶</a>
+      <div class="step"><button aria-label="Fewer clips for ${esc(v.title)}" ${c<=Math.max(1,maxRel)?"disabled":""}>−</button><output>${c}</output><button aria-label="More clips for ${esc(v.title)}" ${c>=6?"disabled":""}>+</button></div></div>`;
+    const [minus,plus]=li.querySelectorAll(".step button");
+    minus.onclick=()=>{ st.counts[v.id]--; commit(); }; plus.onclick=()=>{ st.counts[v.id]++; commit(); };
+    li.querySelector(".vname").onclick=()=>openVod(v.id);
+    R.appendChild(li);
+  });
+  $("optNum").checked=st.numberInTitle; $("optRel").checked=st.includeReleased;
+  // status
+  const vods=rows.filter(r=>r.kind==="vod"), clips=rows.filter(r=>r.kind==="clip");
+  const vrel=vods.filter(r=>r.released).length, crel=clips.filter(r=>r.released).length;
+  const nextUp=rows.find(r=>!r.released), last=rows.filter(r=>!r.released).at(-1), firstClip=clips.find(r=>!r.released);
+  const late=rows.filter(r=>!r.released&&r.date<TODAY).length;
+  $("status").innerHTML = (!st.vodWeekdays.length||!st.weekdays.length) ? `<b>Pick at least one release day for VODs and for clips</b> to build the schedule. ${unscheduled.length} items are waiting.`
+    : `<b>${vrel} of ${vods.length} VODs and ${crel} of ${clips.length} clips released.</b>${nextUp?` Next up ${fmt(nextUp.date)}`:""}${firstClip?`, clips start ${fmt(firstClip.date)}`:""}${last?`, last post ${fmt(last.date,{weekday:"short",month:"short",day:"numeric",year:"numeric"})}`:""}.${late?` <b style="color:var(--late)">${late} past due.</b>`:""}`;
+  // export panel
+  $("expMonth").textContent=monthName(month);
+  if(!dayPick) dayPick=(nextUp||rows[rows.length-1]||{date:TODAY}).date;
+  $("expDay").value=dayPick;
+  $("expHint").textContent = LOCAL ? "The month row follows the calendar view. .ics files download directly; CSV also imports into Google Calendar."
+    : "The month row follows the calendar view. In this view, .ics opens as copy-ready code; CSV downloads and imports into Google Calendar the same way.";
+  // calendar
+  const [y,m]=month.split("-").map(Number);
+  $("mlabel").textContent=monthName(month);
+  const G=$("grid"); G.innerHTML="";
+  ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(n=>{ const d=document.createElement("div"); d.className="dow"; d.textContent=n; G.appendChild(d); });
+  const first=new Date(y,m-1,1); const lead=(first.getDay()+6)%7; let cur=iso(new Date(y,m-1,1-lead));
+  const byDate={}; rows.forEach(r=>(byDate[r.date]=byDate[r.date]||[]).push(r));
+  for(let k=0;k<42;k++){
+    const d=parse(cur), cell=document.createElement("div");
+    const inMonth=d.getMonth()===m-1;
+    cell.className="cell"+(inMonth?"":" out")+(cur===TODAY?" today":"")+(st.blackouts.includes(cur)?" black":"")+(!st.weekdays.includes(d.getDay())||st.blackouts.includes(cur)?" off":"");
+    const dn=document.createElement("button"); dn.className="dn"; dn.textContent=d.getDate();
+    const ds=cur; dn.title=st.blackouts.includes(ds)?"Put this day back in rotation":"Skip this day";
+    dn.onclick=()=>toggleBlack(ds); cell.appendChild(dn);
+    for(const r of byDate[cur]||[]){
+      const {vid,n}=splitId(r.id), v=VOD_BY_ID[vid];
+      const b=document.createElement("button");
+      b.className="chip"+(r.kind==="vod"?" vod":"")+(r.released?" rel":(r.date<TODAY?" late":""));
+      b.innerHTML=`<b>${r.kind==="vod"?`Full VOD ${v.num}`:`VOD ${v.num}, clip ${n}`}${r.released?", released":""}</b><span class="t">${esc(v.title)}</span>${r.kind==="clip"?tagsFor(r.id):""}`;
+      b.title="Open details\n"+eventTitle(st,r.id);
+      b.onclick=()=>openItem(r);
+      cell.appendChild(b);
+    }
+    G.appendChild(cell); cur=addDays(cur,1);
+    if(k===34 && parse(cur).getMonth()!==m-1) break;
+  }
+  // list
+  const T=$("tbody"); T.innerHTML="";
+  const qc=rows.filter(r=>!r.released&&r.kind==="clip").map(r=>r.id), qv=rows.filter(r=>!r.released&&r.kind==="vod").map(r=>r.id);
+  for(const r of rows){
+    const {vid,n}=splitId(r.id), v=VOD_BY_ID[vid]; const q=r.kind==="vod"?qv:qc, qi=q.indexOf(r.id);
+    const tr=document.createElement("tr"); tr.className=(r.kind==="vod"?"vod ":"")+(r.released?"rel":(r.date<TODAY?"late":""));
+    tr.innerHTML=`<td class="date">${fmt(r.date)}</td><td>${v.num}. ${esc(v.title)}</td><td class="c">${r.kind==="vod"?'<span class="kind">VOD</span>Full video':`Clip ${n}${tagsFor(r.id)}`}</td><td><div class="acts"></div></td>`;
+    const A=tr.querySelector(".acts");
+    const mk=(label,fn,dis,cls,aria)=>{ const b=document.createElement("button"); b.textContent=label; b.onclick=fn; b.disabled=!!dis; if(cls) b.className=cls; if(aria) b.setAttribute("aria-label",aria); A.appendChild(b); };
+    mk("Details",()=>openItem(r));
+    if(!r.released){
+      mk("↑",()=>move(r.id,-1),qi<=0,null,"Move earlier");
+      mk("↓",()=>move(r.id,1),qi>=q.length-1,null,"Move later");
+      mk("Skip day",()=>toggleBlack(r.date));
+      mk("Mark released",()=>toggleRelease(r.id,r.date));
+    } else mk("Released",()=>toggleRelease(r.id,r.date),false,"done","Un-mark released");
+    T.appendChild(tr);
+  }
+  $("viewCal").hidden=view!=="cal"; $("viewList").hidden=view!=="list";
+  $("tabCal").setAttribute("aria-selected",view==="cal"); $("tabList").setAttribute("aria-selected",view==="list");
+}
+
+// ---- export ----
+function stamp(){ return new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,""); }
+function blobSave(name,text,type){ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); }
+function scoped(scope){
+  const all=schedule(st).rows, inc=r=>st.includeReleased||!r.released;
+  if(scope==="month") return {rows:all.filter(r=>r.date.startsWith(month)&&inc(r)), base:"ams26-"+month, label:monthName(month)};
+  if(scope==="day") return {rows:all.filter(r=>r.date===dayPick), base:"ams26-"+dayPick, label:fmt(dayPick)};
+  return {rows:all.filter(inc), base:"ams26-publishing", label:"the full schedule"};
+}
+async function doExport(scope,csv){
+  const {rows,base,label}=scoped(scope);
+  if(!rows.length){ toast(scope==="day"?`Nothing scheduled on ${label}`:`Nothing to export for ${label}`); return; }
+  if(csv){
+    const name=base+".csv", text=buildCSV(st,rows);
+    if(LOCAL){ blobSave(name,text,"text/csv"); return; }
+    if(!downloads){ toast("Downloads aren't available here. Use .ics code instead."); return; }
+    try{ await downloads.save({filename:name,data:text}); toast("Saved "+name); }
+    catch(e){ if(e&&e.code!=="declined") toast("Couldn't save the file. Use .ics code instead."); }
+    return;
+  }
+  const name=base+".ics", text=buildICS(st,stamp(),rows);
+  if(LOCAL){ blobSave(name,text,"text/calendar"); toast(`Downloaded ${rows.length} event${rows.length>1?"s":""}`); return; }
+  $("icsName").textContent=name; $("icsText").value=text; $("icsDlg").showModal();
+}
+document.querySelectorAll(".exprow button").forEach(b=>b.onclick=()=>doExport(b.dataset.scope,b.hasAttribute("data-csv")));
+$("expDay").onchange=e=>{ if(e.target.value) dayPick=e.target.value; };
+
+$("prev").onclick=()=>{ const [y,m]=month.split("-").map(Number); month=iso(new Date(y,m-2,1)).slice(0,7); render(); };
+$("next").onclick=()=>{ const [y,m]=month.split("-").map(Number); month=iso(new Date(y,m,1)).slice(0,7); render(); };
+$("tabCal").onclick=()=>{view="cal";render();}; $("tabList").onclick=()=>{view="list";render();};
+$("optNum").onchange=e=>{ st.numberInTitle=e.target.checked; commit(); };
+$("optRel").onchange=e=>{ st.includeReleased=e.target.checked; commit(); };
+$("btnReset").onclick=()=>{ if(confirm("Reset release days, clip counts, VOD and clip order, skipped days and release marks to the original plan? Your links are kept.")){ const links=st.links; st=defaultState(); st.links=links; commit(); toast("Reset to the original plan"); } };
+$("closeIcs").onclick=()=>$("icsDlg").close();
+$("dlIcs").hidden=true;
+$("copyIcs").onclick=async()=>{
+  const ta=$("icsText");
+  try{ await navigator.clipboard.writeText(ta.value); toast("Calendar code copied"); }
+  catch(e){ ta.focus(); ta.select(); try{ document.execCommand("copy"); toast("Calendar code copied"); }catch(_){ toast("Select the code and press Ctrl+C"); } }
+};
+render();
+
+</script>
+</body>
+</html>
