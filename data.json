@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "event": "BFC Symposium Amsterdam 2026",
- "updatedAt": 1794329910584,
+ "updatedAt": 1794331345385,
  "vods": [
   {
    "id": "v1",
@@ -10,7 +10,7 @@
    "date": "2026-11-10",
    "released": false,
    "yt": "https://youtu.be/k-KQaGHfFUc",
-   "x": "",
+   "x": "https://x.com/BitcoinForCorps/status/2120204577844719691",
    "li": ""
   },
   {
@@ -154,9 +154,11 @@
     "v1": "https://youtu.be/k-KQaGHfFUc"
    },
    "clip": {},
-   "vodx": {},
+   "vodx": {
+    "v1": "https://x.com/BitcoinForCorps/status/2120204577844719691"
+   },
    "vodli": {}
   },
-  "updatedAt": 1794329910584
+  "updatedAt": 1794331345385
  }
 }
