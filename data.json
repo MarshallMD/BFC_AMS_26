@@ -1,0 +1,162 @@
+{
+ "schema": 1,
+ "event": "BFC Symposium Amsterdam 2026",
+ "updatedAt": 1794329910584,
+ "vods": [
+  {
+   "id": "v1",
+   "order": 1,
+   "title": "The Institutional Bitcoin Yield Stack",
+   "date": "2026-11-10",
+   "released": false,
+   "yt": "https://youtu.be/k-KQaGHfFUc",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v2",
+   "order": 2,
+   "title": "From Bitcoin Exposure to Institutional Adoption",
+   "date": "2026-11-11",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v3",
+   "order": 3,
+   "title": "Bitcoin's Awkward Age",
+   "date": "2026-11-12",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v4",
+   "order": 4,
+   "title": "Welcome to Amsterdam & Opening Remarks",
+   "date": "2026-11-17",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v5",
+   "order": 5,
+   "title": "Securing Corporate Bitcoin: Privacy, Custody & Risk",
+   "date": "2026-11-18",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v6",
+   "order": 6,
+   "title": "Funding Growth and Attracting Institutional Capital",
+   "date": "2026-11-19",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v7",
+   "order": 7,
+   "title": "Bitcoin & the Autonomous Economy",
+   "date": "2026-11-24",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v8",
+   "order": 8,
+   "title": "Banking, Tokenization, & Stablecoins",
+   "date": "2026-11-25",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v9",
+   "order": 9,
+   "title": "Post-MiCA Acceleration: Opportunity After Regulatory Clarity",
+   "date": "2026-12-01",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v10",
+   "order": 10,
+   "title": "Building Generational Wealth on Bitcoin: A Family Office's Journey",
+   "date": "2026-12-02",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v11",
+   "order": 11,
+   "title": "Showcase: XCE",
+   "date": "2026-12-03",
+   "released": false,
+   "yt": "",
+   "x": "",
+   "li": ""
+  }
+ ],
+ "state": {
+  "vodStart": "2026-11-10",
+  "vodWeekdays": [
+   2,
+   3,
+   4
+  ],
+  "weekdays": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "counts": {
+   "v1": 3,
+   "v2": 3,
+   "v3": 3,
+   "v4": 3,
+   "v5": 3,
+   "v6": 3,
+   "v7": 3,
+   "v8": 3,
+   "v9": 3,
+   "v10": 3,
+   "v11": 3
+  },
+  "released": {},
+  "vodOrder": null,
+  "order": null,
+  "blackouts": [
+   "2026-11-26"
+  ],
+  "numberInTitle": false,
+  "includeReleased": true,
+  "links": {
+   "vod": {
+    "v1": "https://youtu.be/k-KQaGHfFUc"
+   },
+   "clip": {},
+   "vodx": {},
+   "vodli": {}
+  },
+  "updatedAt": 1794329910584
+ }
+}
