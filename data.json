@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "event": "BFC Symposium Amsterdam 2026",
- "updatedAt": 1794331345385,
+ "updatedAt": 1794409973509,
  "vods": [
   {
    "id": "v1",
@@ -19,8 +19,8 @@
    "title": "From Bitcoin Exposure to Institutional Adoption",
    "date": "2026-11-11",
    "released": false,
-   "yt": "",
-   "x": "",
+   "yt": "https://youtu.be/FpNc3pilKe8",
+   "x": "https://x.com/BitcoinForCorps/status/2120533015684075638",
    "li": ""
   },
   {
@@ -151,14 +151,16 @@
   "includeReleased": true,
   "links": {
    "vod": {
-    "v1": "https://youtu.be/k-KQaGHfFUc"
+    "v1": "https://youtu.be/k-KQaGHfFUc",
+    "v2": "https://youtu.be/FpNc3pilKe8"
    },
    "clip": {},
    "vodx": {
-    "v1": "https://x.com/BitcoinForCorps/status/2120204577844719691"
+    "v1": "https://x.com/BitcoinForCorps/status/2120204577844719691",
+    "v2": "https://x.com/BitcoinForCorps/status/2120533015684075638"
    },
    "vodli": {}
   },
-  "updatedAt": 1794331345385
+  "updatedAt": 1794409973509
  }
 }
