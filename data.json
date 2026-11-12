@@ -1,23 +1,13 @@
 {
  "schema": 1,
  "event": "BFC Symposium Amsterdam 2026",
- "updatedAt": 1794515624333,
+ "updatedAt": 1794517193743,
  "vods": [
   {
-   "id": "v3",
-   "order": 1,
-   "title": "Bitcoin's Awkward Age",
-   "date": "2026-11-10",
-   "released": true,
-   "yt": "https://youtu.be/_ciyrcp_2h0",
-   "x": "https://x.com/BitcoinForCorps/status/2120890736132444414?a=qKwrF94M9eSDYVLcdYM&s=20",
-   "li": ""
-  },
-  {
    "id": "v1",
-   "order": 2,
+   "order": 1,
    "title": "The Institutional Bitcoin Yield Stack",
-   "date": "2026-11-11",
+   "date": "2026-11-10",
    "released": true,
    "yt": "https://youtu.be/k-KQaGHfFUc",
    "x": "https://x.com/BitcoinForCorps/status/2120204577844719691",
@@ -25,12 +15,22 @@
   },
   {
    "id": "v2",
-   "order": 3,
+   "order": 2,
    "title": "From Bitcoin Exposure to Institutional Adoption",
-   "date": "2026-11-12",
+   "date": "2026-11-11",
    "released": true,
    "yt": "https://youtu.be/FpNc3pilKe8",
    "x": "https://x.com/BitcoinForCorps/status/2120533015684075638",
+   "li": ""
+  },
+  {
+   "id": "v3",
+   "order": 3,
+   "title": "Bitcoin's Awkward Age",
+   "date": "2026-11-12",
+   "released": true,
+   "yt": "https://youtu.be/_ciyrcp_2h0",
+   "x": "https://x.com/BitcoinForCorps/status/2120890736132444414?a=qKwrF94M9eSDYVLcdYM&s=20",
    "li": ""
   },
   {
@@ -142,9 +142,9 @@
    "v11": 3
   },
   "released": {
-   "v3": "2026-11-10",
-   "v1": "2026-11-11",
-   "v2": "2026-11-12"
+   "v1": "2026-11-10",
+   "v2": "2026-11-11",
+   "v3": "2026-11-12"
   },
   "vodOrder": [
    "v4",
@@ -176,6 +176,6 @@
    },
    "vodli": {}
   },
-  "updatedAt": 1794515624333
+  "updatedAt": 1794517193743
  }
 }
