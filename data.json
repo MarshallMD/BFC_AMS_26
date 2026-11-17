@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "event": "BFC Symposium Amsterdam 2026",
- "updatedAt": 1794517193743,
+ "updatedAt": 1794928029998,
  "vods": [
   {
    "id": "v1",
@@ -38,9 +38,9 @@
    "order": 4,
    "title": "Welcome to Amsterdam & Opening Remarks",
    "date": "2026-11-17",
-   "released": false,
-   "yt": "",
-   "x": "",
+   "released": true,
+   "yt": "https://youtu.be/wGVSPGcSVuk",
+   "x": "https://x.com/BitcoinForCorps/status/2122706054811189357?a=MJwWrvBQXNiJKvC-Ndo&s=20",
    "li": ""
   },
   {
@@ -144,10 +144,10 @@
   "released": {
    "v1": "2026-11-10",
    "v2": "2026-11-11",
-   "v3": "2026-11-12"
+   "v3": "2026-11-12",
+   "v4": "2026-11-17"
   },
   "vodOrder": [
-   "v4",
    "v5",
    "v6",
    "v7",
@@ -166,16 +166,18 @@
    "vod": {
     "v1": "https://youtu.be/k-KQaGHfFUc",
     "v2": "https://youtu.be/FpNc3pilKe8",
-    "v3": "https://youtu.be/_ciyrcp_2h0"
+    "v3": "https://youtu.be/_ciyrcp_2h0",
+    "v4": "https://youtu.be/wGVSPGcSVuk"
    },
    "clip": {},
    "vodx": {
     "v1": "https://x.com/BitcoinForCorps/status/2120204577844719691",
     "v2": "https://x.com/BitcoinForCorps/status/2120533015684075638",
-    "v3": "https://x.com/BitcoinForCorps/status/2120890736132444414?a=qKwrF94M9eSDYVLcdYM&s=20"
+    "v3": "https://x.com/BitcoinForCorps/status/2120890736132444414?a=qKwrF94M9eSDYVLcdYM&s=20",
+    "v4": "https://x.com/BitcoinForCorps/status/2122706054811189357?a=MJwWrvBQXNiJKvC-Ndo&s=20"
    },
    "vodli": {}
   },
-  "updatedAt": 1794517193743
+  "updatedAt": 1794928029998
  }
 }
