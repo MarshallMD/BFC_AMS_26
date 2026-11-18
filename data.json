@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "event": "BFC Symposium Amsterdam 2026",
- "updatedAt": 1795015521389,
+ "updatedAt": 1795015533301,
  "vods": [
   {
    "id": "v1",
@@ -48,7 +48,7 @@
    "order": 5,
    "title": "Securing Corporate Bitcoin: Privacy, Custody & Risk",
    "date": "2026-11-18",
-   "released": false,
+   "released": true,
    "yt": "https://youtu.be/k_fzVl8RLHc",
    "x": "",
    "li": ""
@@ -145,10 +145,10 @@
    "v1": "2026-11-10",
    "v2": "2026-11-11",
    "v3": "2026-11-12",
-   "v4": "2026-11-17"
+   "v4": "2026-11-17",
+   "v5": "2026-11-18"
   },
   "vodOrder": [
-   "v5",
    "v6",
    "v7",
    "v8",
@@ -179,6 +179,6 @@
    },
    "vodli": {}
   },
-  "updatedAt": 1795015521389
+  "updatedAt": 1795015533301
  }
 }
