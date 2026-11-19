@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "event": "BFC Symposium Amsterdam 2026",
- "updatedAt": 1795015533301,
+ "updatedAt": 1795103628968,
  "vods": [
   {
    "id": "v1",
@@ -58,9 +58,9 @@
    "order": 6,
    "title": "Funding Growth and Attracting Institutional Capital",
    "date": "2026-11-19",
-   "released": false,
-   "yt": "",
-   "x": "",
+   "released": true,
+   "yt": "https://youtu.be/sDZNNomSLrc",
+   "x": "https://x.com/BitcoinForCorps/status/2123443539967140164",
    "li": ""
   },
   {
@@ -146,10 +146,10 @@
    "v2": "2026-11-11",
    "v3": "2026-11-12",
    "v4": "2026-11-17",
-   "v5": "2026-11-18"
+   "v5": "2026-11-18",
+   "v6": "2026-11-19"
   },
   "vodOrder": [
-   "v6",
    "v7",
    "v8",
    "v9",
@@ -168,17 +168,19 @@
     "v2": "https://youtu.be/FpNc3pilKe8",
     "v3": "https://youtu.be/_ciyrcp_2h0",
     "v4": "https://youtu.be/wGVSPGcSVuk",
-    "v5": "https://youtu.be/k_fzVl8RLHc"
+    "v5": "https://youtu.be/k_fzVl8RLHc",
+    "v6": "https://youtu.be/sDZNNomSLrc"
    },
    "clip": {},
    "vodx": {
     "v1": "https://x.com/BitcoinForCorps/status/2120204577844719691",
     "v2": "https://x.com/BitcoinForCorps/status/2120533015684075638",
     "v3": "https://x.com/BitcoinForCorps/status/2120890736132444414?a=qKwrF94M9eSDYVLcdYM&s=20",
-    "v4": "https://x.com/BitcoinForCorps/status/2122706054811189357?a=MJwWrvBQXNiJKvC-Ndo&s=20"
+    "v4": "https://x.com/BitcoinForCorps/status/2122706054811189357?a=MJwWrvBQXNiJKvC-Ndo&s=20",
+    "v6": "https://x.com/BitcoinForCorps/status/2123443539967140164"
    },
    "vodli": {}
   },
-  "updatedAt": 1795015533301
+  "updatedAt": 1795103628968
  }
 }
