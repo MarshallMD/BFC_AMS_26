@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "event": "BFC Symposium Amsterdam 2026",
- "updatedAt": 1795103628968,
+ "updatedAt": 1795103676257,
  "vods": [
   {
    "id": "v1",
@@ -59,15 +59,25 @@
    "title": "Funding Growth and Attracting Institutional Capital",
    "date": "2026-11-19",
    "released": true,
+   "yt": "",
+   "x": "",
+   "li": ""
+  },
+  {
+   "id": "v10",
+   "order": 7,
+   "title": "Building Generational Wealth on Bitcoin: A Family Office's Journey",
+   "date": "2026-12-02",
+   "released": true,
    "yt": "https://youtu.be/sDZNNomSLrc",
    "x": "https://x.com/BitcoinForCorps/status/2123443539967140164",
    "li": ""
   },
   {
    "id": "v7",
-   "order": 7,
+   "order": 8,
    "title": "Bitcoin & the Autonomous Economy",
-   "date": "2026-11-24",
+   "date": "2026-12-03",
    "released": false,
    "yt": "",
    "x": "",
@@ -75,9 +85,9 @@
   },
   {
    "id": "v8",
-   "order": 8,
+   "order": 9,
    "title": "Banking, Tokenization, & Stablecoins",
-   "date": "2026-11-25",
+   "date": "2026-12-08",
    "released": false,
    "yt": "",
    "x": "",
@@ -85,19 +95,9 @@
   },
   {
    "id": "v9",
-   "order": 9,
-   "title": "Post-MiCA Acceleration: Opportunity After Regulatory Clarity",
-   "date": "2026-12-01",
-   "released": false,
-   "yt": "",
-   "x": "",
-   "li": ""
-  },
-  {
-   "id": "v10",
    "order": 10,
-   "title": "Building Generational Wealth on Bitcoin: A Family Office's Journey",
-   "date": "2026-12-02",
+   "title": "Post-MiCA Acceleration: Opportunity After Regulatory Clarity",
+   "date": "2026-12-09",
    "released": false,
    "yt": "",
    "x": "",
@@ -107,7 +107,7 @@
    "id": "v11",
    "order": 11,
    "title": "Showcase: XCE",
-   "date": "2026-12-03",
+   "date": "2026-12-10",
    "released": false,
    "yt": "",
    "x": "",
@@ -147,13 +147,13 @@
    "v3": "2026-11-12",
    "v4": "2026-11-17",
    "v5": "2026-11-18",
-   "v6": "2026-11-19"
+   "v6": "2026-11-19",
+   "v10": "2026-12-02"
   },
   "vodOrder": [
    "v7",
    "v8",
    "v9",
-   "v10",
    "v11"
   ],
   "order": null,
@@ -169,7 +169,7 @@
     "v3": "https://youtu.be/_ciyrcp_2h0",
     "v4": "https://youtu.be/wGVSPGcSVuk",
     "v5": "https://youtu.be/k_fzVl8RLHc",
-    "v6": "https://youtu.be/sDZNNomSLrc"
+    "v10": "https://youtu.be/sDZNNomSLrc"
    },
    "clip": {},
    "vodx": {
@@ -177,10 +177,10 @@
     "v2": "https://x.com/BitcoinForCorps/status/2120533015684075638",
     "v3": "https://x.com/BitcoinForCorps/status/2120890736132444414?a=qKwrF94M9eSDYVLcdYM&s=20",
     "v4": "https://x.com/BitcoinForCorps/status/2122706054811189357?a=MJwWrvBQXNiJKvC-Ndo&s=20",
-    "v6": "https://x.com/BitcoinForCorps/status/2123443539967140164"
+    "v10": "https://x.com/BitcoinForCorps/status/2123443539967140164"
    },
    "vodli": {}
   },
-  "updatedAt": 1795103628968
+  "updatedAt": 1795103676257
  }
 }
